@@ -53,36 +53,52 @@ const userController = {
   // User profile
   getUser: async (req, res, next) => {
     try {
-      const user = await User.findByPk(req.params.id, { raw: true })
-
-      // Get unique commented restaurants
-      // ===== SQL command below ====
-      // SELECT
-      //     COUNT(restaurant_id) AS `comments`,
-      //     restaurant_id,
-      //     user_id
-      // FROM comments
-      // WHERE user_id = {user.id}
-      // GROUP BY restaurant_id;
-      const comments = await Comment.findAll({
-        where: { userId: user.id },
-        attributes: [
-          'restaurant_id',
-          [
-            db.sequelize.fn('count', db.sequelize.col('restaurant_id')),
-            'comments'
+      const userId = req.params.id
+      const [rawUser, comments] = await Promise.all([
+        User.findByPk(userId, {
+          include: [
+            { model: User, as: 'Followers' },
+            { model: User, as: 'Followings' },
+            { model: Restaurant, as: 'FavoritedRestaurants' }
           ]
-        ],
-        include: [Restaurant],
-        group: ['restaurant_id'],
-        raw: true,
-        nest: true
-      })
+        }),
+
+        // Get unique commented restaurants
+        // ===== SQL command below ====
+        // SELECT
+        //     COUNT(restaurant_id) AS `comments`,
+        //     restaurant_id,
+        //     user_id
+        // FROM comments
+        // WHERE user_id = {user.id}
+        // GROUP BY restaurant_id;
+        Comment.findAll({
+          where: { userId },
+          attributes: [
+            'restaurant_id',
+            [
+              db.sequelize.fn('count', db.sequelize.col('restaurant_id')),
+              'comments'
+            ]
+          ],
+          include: [Restaurant],
+          group: ['restaurant_id'],
+          raw: true,
+          nest: true
+        })
+      ])
 
       const totalComments = comments.reduce(
         (acc, curr) => acc + curr.comments,
         comments[0].comments
       )
+
+      const user = {
+        ...rawUser.toJSON(),
+        followerCount: rawUser.Followers.length,
+        followingCount: rawUser.Followings.length,
+        FavoritedRestaurantsCount: rawUser.FavoritedRestaurants.length
+      }
 
       return res.render('users/profile', {
         user,
