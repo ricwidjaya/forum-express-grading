@@ -2,15 +2,12 @@ const { Restaurant, User, Category } = require('../../models')
 const { imgurFileHandler } = require('../../middleware/file-helpers')
 const { isSuperUser } = require('../../helpers/auth-helpers')
 const { lineChartData, pieChartData } = require('../../middleware/data-helper')
+const adminServices = require('../../services/admin-services')
 
 const adminController = {
   // Restaurants CRUD
   getRestaurants: (req, res, next) => {
-    Restaurant.findAll({ raw: true, nest: true, include: [Category] })
-      .then(restaurants => {
-        return res.render('admin/restaurants', { restaurants })
-      })
-      .catch(err => next(err))
+    adminServices.getRestaurants(req, (err, data) => err ? next(err) : res.render('admin/restaurants', data))
   },
 
   getRestaurant: (req, res, next) => {

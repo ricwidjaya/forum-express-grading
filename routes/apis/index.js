@@ -1,8 +1,10 @@
 const express = require('express')
 const router = express.Router()
 
-const restController = require('../../controllers/apis/restaurant-controller')
+const restaurants = require('./modules/restaurants')
+const admin = require('./modules/admin')
 
-router.get('/restaurants', restController.getRestaurants)
+router.use('/admin', admin)
+router.use('/restaurants', restaurants)
 
 module.exports = router
