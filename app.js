@@ -3,7 +3,7 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
 const path = require('path')
-const routes = require('./routes')
+const pages = require('./routes/pages')
 const handlebars = require('express-handlebars')
 const methodOverride = require('method-override')
 const session = require('express-session')
@@ -35,7 +35,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(helpers.localVariable)
 
-app.use(routes)
+app.use(pages)
 
 app.listen(port, () => {
   console.info(`Example app listening on port ${port}!`)

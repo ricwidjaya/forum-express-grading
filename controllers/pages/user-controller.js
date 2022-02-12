@@ -1,9 +1,9 @@
 const bcrypt = require('bcryptjs')
-const { User, Restaurant, Comment, Favorite, Like, Followship } = require('../models')
+const { User, Restaurant, Comment, Favorite, Like, Followship } = require('../../models')
 // import db for using db function
-const db = require('../models/index')
+const db = require('../../models/index')
 
-const { imgurFileHandler } = require('../middleware/file-helpers')
+const { imgurFileHandler } = require('../../middleware/file-helpers')
 
 const userController = {
   signUpPage: (req, res) => {

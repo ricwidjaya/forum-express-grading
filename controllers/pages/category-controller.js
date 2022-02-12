@@ -1,5 +1,5 @@
-const { Restaurant, Category } = require('../models')
-const { isAttached } = require('../middleware/data-helper')
+const { Restaurant, Category } = require('../../models')
+const { isAttached } = require('../../middleware/data-helper')
 
 const categoryController = {
   getCategories: async (req, res, next) => {

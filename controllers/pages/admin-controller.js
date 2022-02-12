@@ -1,7 +1,7 @@
-const { Restaurant, User, Category } = require('../models')
-const { imgurFileHandler } = require('../middleware/file-helpers')
-const { isSuperUser } = require('../helpers/auth-helpers')
-const { lineChartData, pieChartData } = require('../middleware/data-helper')
+const { Restaurant, User, Category } = require('../../models')
+const { imgurFileHandler } = require('../../middleware/file-helpers')
+const { isSuperUser } = require('../../helpers/auth-helpers')
+const { lineChartData, pieChartData } = require('../../middleware/data-helper')
 
 const adminController = {
   // Restaurants CRUD
