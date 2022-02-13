@@ -21,6 +21,7 @@ app.use(express.static('public'))
 
 // http and session
 app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
 app.use(methodOverride('_method'))
 app.use('/upload', express.static(path.join(__dirname, 'upload')))
 app.use(
