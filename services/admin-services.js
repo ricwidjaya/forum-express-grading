@@ -13,6 +13,21 @@ const adminServices = {
     } catch (error) {
       callback(error)
     }
+  },
+
+  deleteRestaurant: async (req, callback) => {
+    try {
+      const restaurant = await Restaurant.findByPk(req.params.id)
+
+      if (!restaurant) throw new Error("Restaurant didn't exist!")
+
+      const deletedRestaurant = await restaurant.destroy()
+      return callback(null,
+        { restaurant: deletedRestaurant }
+      )
+    } catch (error) {
+      callback(error)
+    }
   }
 }
 
