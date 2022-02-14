@@ -1,5 +1,7 @@
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
+const JWTStrategy = require('passport-jwt').Strategy
+const ExtractJWT = require('passport-jwt').ExtractJwt
 const { User, Restaurant } = require('../models')
 const bcrypt = require('bcryptjs')
 
@@ -35,22 +37,40 @@ passport.use(new LocalStrategy(
             return done(null, user)
           })
       })
-
-    // Serialize and Deserialize
-    passport.serializeUser((user, done) => {
-      return done(null, user.id)
-    })
-
-    passport.deserializeUser((id, done) => {
-      User.findByPk(id, {
-        include: [
-          { model: Restaurant, as: 'FavoritedRestaurants' },
-          { model: Restaurant, as: 'LikedRestaurants' },
-          { model: User, as: 'Followers' },
-          { model: User, as: 'Followings' }
-        ]
-      }).then(user => done(null, user.toJSON()))
-    })
   }))
 
+const jwtOptions = {
+  jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET
+}
+passport.use(
+  new JWTStrategy(jwtOptions, (jwtPayload, cb) => {
+    User.findByPk(jwtPayload.id, {
+      include: [
+        { model: Restaurant, as: 'FavoritedRestaurants' },
+        { model: Restaurant, as: 'LikedRestaurants' },
+        { model: User, as: 'Followers' },
+        { model: User, as: 'Followings' }
+      ]
+    })
+      .then(user => cb(null, user.toJSON()))
+      .catch(err => cb(err))
+  })
+)
+
+// Serialize and Deserialize
+passport.serializeUser((user, done) => {
+  return done(null, user.id)
+})
+
+passport.deserializeUser((id, done) => {
+  User.findByPk(id, {
+    include: [
+      { model: Restaurant, as: 'FavoritedRestaurants' },
+      { model: Restaurant, as: 'LikedRestaurants' },
+      { model: User, as: 'Followers' },
+      { model: User, as: 'Followings' }
+    ]
+  }).then(user => done(null, user.toJSON()))
+})
 module.exports = passport
