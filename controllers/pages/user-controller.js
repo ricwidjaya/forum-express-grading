@@ -1,8 +1,8 @@
-const bcrypt = require('bcryptjs')
 const { User, Restaurant, Comment, Favorite, Like, Followship } = require('../../models')
 // import db for using db function
 const db = require('../../models/index')
 
+const userServices = require('../../services/user-services')
 const { imgurFileHandler } = require('../../middleware/file-helpers')
 
 const userController = {
@@ -11,28 +11,11 @@ const userController = {
   },
 
   signUp: (req, res, next) => {
-    const { name, password, email, passwordCheck } = req.body
-    // Double check password
-    if (password !== passwordCheck) throw new Error('Passwords do not match!')
-
-    // Check if user exists
-    User.findOne({ where: { email } })
-      .then(user => {
-        if (user) throw new Error('Email already exists!')
-        return bcrypt.hash(password, 10)
-      })
-      .then(hash => {
-        User.create({
-          name,
-          email,
-          password: hash
-        })
-      })
-      .then(() => {
-        req.flash('success_messages', '成功註冊帳號！')
-        return res.redirect('/signin')
-      })
-      .catch(err => next(err))
+    userServices.signUp(req, (err, data) => {
+      if (err) return next(err)
+      req.flash('success_messages', '成功註冊帳號！')
+      return res.redirect('/signin')
+    })
   },
 
   signInPage: (req, res) => {
