@@ -53,7 +53,9 @@ passport.use(
         { model: User, as: 'Followings' }
       ]
     })
-      .then(user => cb(null, user.toJSON()))
+      .then(user => {
+        cb(null, user)
+      })
       .catch(err => cb(err))
   })
 )
@@ -73,4 +75,5 @@ passport.deserializeUser((id, done) => {
     ]
   }).then(user => done(null, user.toJSON()))
 })
+
 module.exports = passport
