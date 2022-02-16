@@ -61,7 +61,7 @@ const restaurantController = {
       ])
 
       return res.render('dashboard', {
-        restaurant: restaurant,
+        restaurant,
         commentCounts: comments.count
       })
     } catch (error) {

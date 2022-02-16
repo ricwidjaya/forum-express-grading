@@ -1,4 +1,4 @@
-const { Restaurant, Category } = require('../models')
+const { Restaurant, Category, User, Comment, View } = require('../models')
 const {
   getOffset,
   getPagination
@@ -45,6 +45,44 @@ const restaurantServices = {
         categories,
         categoryId,
         pagination: getPagination(limit, page, restaurants.count)
+      })
+    } catch (error) {
+      callback(error)
+    }
+  },
+
+  getRestaurant: async (req, callback) => {
+    try {
+      // Eager Loading (JOIN)
+      const restInstance = await Restaurant.findByPk(req.params.id, {
+        include: [
+          Category,
+          { model: Comment, include: User },
+          { model: User, as: 'FavoritedUsers' },
+          { model: User, as: 'LikedUsers' }
+        ],
+        order: [[Comment, 'createdAt', 'DESC']]
+      })
+
+      if (!restInstance) throw new Error("Restaurant didn't exist!")
+
+      const isFavorited = restInstance.FavoritedUsers.some(
+        fu => fu.id === req.user.id
+      )
+      const isLiked = restInstance.LikedUsers.some(lu => lu.id === req.user.id)
+      // Update view count on restaurant
+      const restaurant = await restInstance.increment('view_counts')
+
+      // Update view data
+      await View.create({
+        userId: req.user.id,
+        restaurantId: req.params.id
+      })
+
+      return callback(null, {
+        restaurant: restaurant.toJSON(),
+        isFavorited,
+        isLiked
       })
     } catch (error) {
       callback(error)

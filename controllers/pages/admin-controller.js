@@ -1,6 +1,4 @@
-const { Restaurant, User, Category } = require('../../models')
-const { imgurFileHandler } = require('../../middleware/file-helpers')
-const { isSuperUser } = require('../../helpers/auth-helpers')
+const { Restaurant, Category } = require('../../models')
 const { lineChartData, pieChartData } = require('../../middleware/data-helper')
 const adminServices = require('../../services/admin-services')
 
@@ -11,25 +9,13 @@ const adminController = {
   },
 
   getRestaurant: (req, res, next) => {
-    Restaurant.findByPk(req.params.id, {
-      raw: true,
-      nest: true,
-      include: [Category]
-    })
-      .then(restaurant => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
-        return res.render('admin/restaurant', { restaurant })
-      })
-      .catch(err => next(err))
+    adminServices.getRestaurant(req, (err, data) => err ? next(err) : res.render('admin/restaurant', data))
   },
 
   createRestaurant: async (req, res, next) => {
-    try {
-      const categories = await Category.findAll({ raw: true })
-      return res.render('admin/create-restaurant', { categories })
-    } catch (error) {
-      next(error)
-    }
+    adminServices.getCategories(req, (err, data) =>
+      err ? next(err) : res.render('admin/create-restaurant', data)
+    )
   },
 
   postRestaurant: (req, res, next) => {
@@ -60,35 +46,15 @@ const adminController = {
   },
 
   putRestaurant: (req, res, next) => {
-    const { name, tel, address, openingHours, description, categoryId } =
-      req.body
-    if (!name) throw new Error('Restaurant name is required!')
+    adminServices.putRestaurant(req, (err, data) => {
+      if (err) return next(err)
 
-    const { file } = req
-
-    Promise.all([Restaurant.findByPk(req.params.id), imgurFileHandler(file)])
-      // Keep sequelize class to update data
-      .then(([restaurant, filePath]) => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
-        return restaurant
-          .update({
-            name,
-            tel,
-            address,
-            openingHours,
-            description,
-            categoryId,
-            image: filePath || restaurant.image
-          })
-          .then(() => {
-            req.flash(
-              'success_messages',
-              'restaurant was successfully to update'
-            )
-            return res.redirect('/admin/restaurants')
-          })
-          .catch(err => next(err))
-      })
+      req.flash(
+        'success_messages',
+        'restaurant was successfully to update'
+      )
+      return res.redirect('/admin/restaurants')
+    })
   },
 
   deleteRestaurant: (req, res, next) => {
@@ -98,33 +64,18 @@ const adminController = {
   },
 
   // Users CRUD
-  getUsers: async (req, res) => {
-    const users = await User.findAll({ raw: true })
-    return res.render('admin/users', {
-      users,
-      script: 'admin/users',
-      user: req.user
-    })
+  getUsers: (req, res, next) => {
+    adminServices.getUsers(req, (err, data) =>
+      err ? next(err) : res.render('admin/users', data)
+    )
   },
 
-  patchUser: async (req, res, next) => {
-    try {
-      const user = await User.findByPk(req.params.id)
-
-      // Validate user type
-      if (!user) throw new Error("User doesn't exist")
-      if (isSuperUser(user)) {
-        req.flash('error_messages', '禁止變更 root 權限')
-        return res.redirect('back')
-      }
-
-      // Update user access
-      await user.update({ isAdmin: !user.isAdmin })
+  patchUser: (req, res, next) => {
+    adminServices.patchUser(req, (err, data) => {
+      if (err) return next(err)
       req.flash('success_messages', '使用者權限變更成功')
       return res.redirect('/admin/users')
-    } catch (error) {
-      next(error)
-    }
+    })
   },
 
   // Restaurant Dashboard

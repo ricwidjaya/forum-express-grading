@@ -8,6 +8,17 @@ const adminController = {
     )
   },
 
+  getRestaurant: (req, res, next) => {
+    adminServices.getRestaurant(req, (err, data) =>
+      err
+        ? next(err)
+        : res.json({
+          status: 'success',
+          data
+        })
+    )
+  },
+
   deleteRestaurant: (req, res, next) => {
     adminServices.deleteRestaurant(req, (err, data) =>
       err ? next(err) : res.json({ status: 'success', data })
@@ -15,7 +26,38 @@ const adminController = {
   },
 
   postRestaurant: (req, res, next) => {
-    adminServices.postRestaurant(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
+    adminServices.postRestaurant(req, (err, data) =>
+      err ? next(err) : res.json({ status: 'success', data })
+    )
+  },
+
+  putRestaurant: (req, res, next) => {
+    adminServices.putRestaurant(req, (err, data) => {
+      err ? next(err) : res.json({ status: 'success', data })
+    })
+  },
+
+  // Users
+  getUsers: (req, res, next) => {
+    adminServices.getUsers(req, (err, data) =>
+      err ? next(err) : res.json({ status: 'success', data })
+    )
+  },
+
+  patchUser: (req, res, next) => {
+    adminServices.patchUser(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
+  },
+
+  // Listing all categories
+  getCategories: (req, res, next) => {
+    adminServices.getCategories(req, (err, data) =>
+      err
+        ? next(err)
+        : res.json({
+          status: 'success',
+          data
+        })
+    )
   }
 }
 

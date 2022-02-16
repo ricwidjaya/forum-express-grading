@@ -1,45 +1,21 @@
 const { Restaurant, Category } = require('../../models')
 const { isAttached } = require('../../middleware/data-helper')
 
+const categoryServices = require('../../services/category-services')
+
 const categoryController = {
-  getCategories: async (req, res, next) => {
-    try {
-      const [category, categories] = await Promise.all([
-        req.params.id ? Category.findByPk(req.params.id, { raw: true }) : null,
-        Category.findAll({ raw: true })
-      ])
-      return res.render('admin/categories', {
-        category,
-        categories,
-        script: 'admin/categories'
-      })
-    } catch (error) {
-      next(error)
-    }
+  getCategories: (req, res, next) => {
+    categoryServices.getCategories(req, (err, data) =>
+      err ? next(err) : res.render('admin/categories', data)
+    )
   },
 
-  postCategory: async (req, res, next) => {
-    try {
-      const { name } = req.body
-      if (!name) throw new Error('Please enter category name!')
-      await Category.findOrCreate({ where: { name } })
-
-      return res.redirect('/admin/categories')
-    } catch (error) {
-      next(error)
-    }
+  postCategory: (req, res, next) => {
+    categoryServices.postCategory(req, (err, data) => err ? next(err) : res.redirect('/admin/categories'))
   },
 
-  putCategory: async (req, res, next) => {
-    try {
-      const { name } = req.body
-      if (!name) throw new Error('Please enter category name!')
-      await Category.update({ name }, { where: { id: req.params.id } })
-
-      return res.redirect('/admin/categories')
-    } catch (error) {
-      next(error)
-    }
+  putCategory: (req, res, next) => {
+    categoryServices.putCategory(req, (err, data) => err ? next(err) : res.redirect('/admin/categories'))
   },
 
   deleteCategory: async (req, res, next) => {
@@ -82,7 +58,6 @@ const categoryController = {
   // Check if category is attached to any restaurant
   checkAttachment: async (req, res, next) => {
     try {
-      console.log('activate')
       // Find if any restaurant is attached to this category (Reference middleware/data-helper.js)
       if (await isAttached(req.params.id, Restaurant, 'categoryId')) {
         return res.json(true)
@@ -92,11 +67,6 @@ const categoryController = {
     } catch (error) {
       next(error)
     }
-  },
-
-  // If category is attached with restaurant, select one delete method choose by admin
-  deleteCategoryByOption: (req, res, next) => {
-
   }
 }
 
